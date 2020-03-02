@@ -14,8 +14,12 @@ public class BeatingHeart : MonoBehaviour
 
     void Start() {
         heartStart = new planeCoord(0,0);
+<<<<<<< HEAD
 //        heartFinish = new planeCoord(sideLength - 1, sideLength - 1);
         heartFinish = new planeCoord(5,15);
+=======
+        heartFinish = new planeCoord(sideLength - 1, sideLength - 1);
+>>>>>>> 46306f4ac9e8b05d8ad3caf917e4677ccbf52ee3
         gridBuilder = gameObject.GetComponent<GenerateGrid>();
         grid = gridBuilder.generateGrid(sideLength);
         clickedCellContainer = gameObject.GetComponent<ClickedCellContainer>();
