@@ -20,7 +20,7 @@ public class BeatingHeart : MonoBehaviour
         clickedCellContainer = gameObject.GetComponent<ClickedCellContainer>();
         pathfinder.GetComponent<PathfinderScript>().pathfinderGrid = grid;
         pathfinder.GetComponent<PathfinderScript>().startUp(heartStart, heartFinish);
-        pathfinder.GetComponent<PathfinderScript>().search();
+        //pathfinder.GetComponent<PathfinderScript>().search();
     }
 
     void Update() {

@@ -9,42 +9,34 @@ public class PathfinderScript : MonoBehaviour
         public GameObject driver;
         public GameObject[,] pathfinderGrid;
         List<planeCoord> unexplored = new List<planeCoord>();
-        List<planeCoord> foundWalls = new List<planeCoord>();
+        List<planeCoord> excludedCells = new List<planeCoord>();
         public planeCoord startPoint;
         public planeCoord goalPoint;
         planeCoord workingCoordinate;
         int limiter = 0;
-        int limit  = 1000;
+        int limit  = 2000;
 
         public void startUp(planeCoord start, planeCoord finish) {
                 startPoint = start;
                 goalPoint = finish;
                 workingCoordinate = startPoint;
-                unexplored.Add(workingCoordinate);
                 pathfinderGrid[workingCoordinate.x, workingCoordinate.y].GetComponent<Renderer>().material.SetColor("_Color", Color.red);
-                //pokeAdjacentsToUnexplored();
+                unexplored.Add(workingCoordinate);
         }
 
         public void search () {
-                //int i = 0;
-                while (unexplored.Count != 0 || workingCoordinate != goalPoint) {
-                        planeCoord temp = workingCoordinate;
-                        pokeAdjacentsToUnexplored();
+                pokeAdjacentsToUnexplored();
+                while (unexplored.Count != 0 && workingCoordinate.compare(goalPoint) == false) {
                         pathfinderGrid[workingCoordinate.x, workingCoordinate.y].GetComponent<Renderer>().material.SetColor("_Color", Color.white);
+                        excludedCells.Add(workingCoordinate);
                         unexplored.Remove(workingCoordinate);
+                        logLists(); 
                         workingCoordinate = unexplored[0];
                         pathfinderGrid[workingCoordinate.x, workingCoordinate.y].GetComponent<Renderer>().material.SetColor("_Color", Color.red);
-                        string unexploredStatus = "";
-                                foreach (planeCoord entry in unexplored) {
-                                        unexploredStatus = unexploredStatus + entry.toInts() + " -- ";
-                                }
-                        Debug.Log("Finished poking around " + temp.toInts() + " , the unexplored list is: " + unexploredStatus);
-                        // i++;
-                        // if (i > 10) {
-                        //         break;
-                        // }
+                        pokeAdjacentsToUnexplored();
                         loopBreaker("search");
-                }              
+                }
+                Debug.Log("Search complete.");
         }
 
         void pokeAdjacentsToUnexplored () {
@@ -52,7 +44,7 @@ public class PathfinderScript : MonoBehaviour
                         for (int j = -1; j <= 1; j++) {
                                 if (i != 0 || j != 0) {
                                         try {
-                                                if (isNavigable(pathfinderGrid[workingCoordinate.x + i, workingCoordinate.y + j]) == true) {
+                                                if (isNewNavigable(pathfinderGrid[workingCoordinate.x + i, workingCoordinate.y + j]) == true) {
                                                         planeCoord toInsert = new planeCoord(workingCoordinate.x + i, workingCoordinate.y + j);
                                                         insertUnexplored(toInsert);
                                                 }
@@ -65,13 +57,29 @@ public class PathfinderScript : MonoBehaviour
                 }
         }
 
-        bool isNavigable (GameObject maybeWall) {
-                if (maybeWall.GetComponent<SquareProperties>().isWall() == true) {
-                        foundWalls.Add(maybeWall.GetComponent<SquareProperties>().nameInCoordinates);
+        bool isNewNavigable (GameObject maybeWall) {
+                planeCoord trouble = maybeWall.GetComponent<SquareProperties>().nameInCoordinates;
+                if (searchListForPlaneCoord(excludedCells, maybeWall.GetComponent<SquareProperties>().nameInCoordinates)) {
+                        return false;
+                }
+                if (searchListForPlaneCoord(unexplored, maybeWall.GetComponent<SquareProperties>().nameInCoordinates)) {
+                        return false;
+                }
+                else if (maybeWall.GetComponent<SquareProperties>().isWall() == true) {
+                        excludedCells.Add(maybeWall.GetComponent<SquareProperties>().nameInCoordinates);
                         maybeWall.GetComponent<Renderer>().material.SetColor("_Color", Color.black);
                         return false;
                 }
                 return true;
+        }
+
+        bool searchListForPlaneCoord (List<planeCoord> toSearch, planeCoord term) {
+                for (int i = 0; i <= toSearch.Count-1; i++) {
+                        if (toSearch[i].x == term.x && toSearch[i].y == term.y) {
+                                return true;
+                        } 
+                }
+                return false;
         }
 
         void insertUnexplored (planeCoord toInsert) {
@@ -99,12 +107,28 @@ public class PathfinderScript : MonoBehaviour
                 else if (key > unexplored[mid].distanceTo(goalPoint)) {
                         unexplored.Insert(mid++, toInsert);
                 }
-                Debug.Log("Added " + toInsert.x + toInsert.y + " to unexplored locations.");
+                Debug.Log("Added " + toInsert.x + "," + toInsert.y + " to unexplored locations.");
                 pathfinderGrid[toInsert.x, toInsert.y].GetComponent<Renderer>().material.SetColor("_Color", Color.yellow);
+        }
+
+        void logLists () {
+                string unexploredStatus = "";
+                                foreach (planeCoord entry in unexplored) {
+                                        unexploredStatus = unexploredStatus + entry.x + "," + entry.y + " -- ";
+                                }
+                        string excludedStatus = "";
+                                foreach (planeCoord entry in excludedCells) {
+                                        excludedStatus = excludedStatus + entry.x + "," + entry.y + " -- ";
+                                }
+                        Debug.Log("Finished poking around " + workingCoordinate.toInts() + " , the unexplored list is: " + unexploredStatus 
+                        + ". The excludedCells list is: " + excludedStatus);
         }
 
         void loopBreaker (string problemArea) {
                 limiter++;
+                if (limiter == 500) {
+
+                }
                 if (limiter >= limit) {
                         throw new Exception("Infinite loop in " + problemArea + " function broken.");
                 }
