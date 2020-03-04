@@ -23,6 +23,16 @@ public class planeCoord
     public int course (planeCoord from) {
         return (y - from.y) / (x - from.x);
     }
+
+    public bool compare(planeCoord p) {
+        if (p == null) {
+            return false;
+        }
+        else if (p.x == x || p.y == y) {
+            return true;
+        }
+        return false;
+    }
 }
 
     // public int x () {
