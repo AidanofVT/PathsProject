@@ -28,7 +28,7 @@ public class planeCoord
         if (p == null) {
             return false;
         }
-        else if (p.x == x || p.y == y) {
+        else if (p.x == this.x && p.y == this.y) {
             return true;
         }
         return false;
