@@ -26,17 +26,18 @@ public class PathfinderScript : MonoBehaviour
 
         public void search () {
                 pokeAdjacentsToUnexplored();
+                //Seems to not conform to the While parameter.
                 while (unexplored.Count != 0 && workingCoordinate.compare(goalPoint) == false) {
                         pathfinderGrid[workingCoordinate.x, workingCoordinate.y].GetComponent<Renderer>().material.SetColor("_Color", Color.white);
                         excludedCells.Add(workingCoordinate);
-                        unexplored.Remove(workingCoordinate);
                         logLists(); 
                         workingCoordinate = unexplored[0];
+                        unexplored.Remove(workingCoordinate);
                         pathfinderGrid[workingCoordinate.x, workingCoordinate.y].GetComponent<Renderer>().material.SetColor("_Color", Color.red);
                         pokeAdjacentsToUnexplored();
                         loopBreaker("search");
                 }
-                Debug.Log("Search complete.");
+                Debug.Log("Search ended.");
         }
 
         void pokeAdjacentsToUnexplored () {
