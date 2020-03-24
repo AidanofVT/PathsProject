@@ -84,17 +84,18 @@ public class PathfinderScript : MonoBehaviour
         }
 
         void insertUnexplored (planeCoord toInsert) {
-                float key = toInsert.distanceTo(goalPoint);
+                float newAppeal = toInsert.distanceTo(goalPoint) + toInsert.distanceTo(startPoint);
+                float midAppeal = 0.0f;
                 int min = 0;
                 int max = unexplored.Count - 1;
                 int mid = (min + max) / 2;
                 while (min <= max) {
                         mid = (min + max) / 2;
-                        float key2 = unexplored[mid].distanceTo(goalPoint);
-                        if (key == unexplored[mid].distanceTo(goalPoint)) {  
+                        midAppeal = unexplored[mid].distanceTo(goalPoint);
+                        if  (newAppeal == midAppeal) {  
                                 break;  
                         }  
-                        else if (key < unexplored[mid].distanceTo(goalPoint)) {  
+                        else if  (newAppeal < midAppeal) {  
                                 max = mid - 1;  
                         }  
                         else {  
@@ -102,10 +103,10 @@ public class PathfinderScript : MonoBehaviour
                         }
                         loopBreaker("insertUnexplored");
                 }
-                if (key < unexplored[mid].distanceTo(goalPoint)) {
+                if  (newAppeal < midAppeal) {
                         unexplored.Insert(mid, toInsert);
                 }
-                else if (key > unexplored[mid].distanceTo(goalPoint)) {
+                else if (newAppeal > midAppeal) {
                         unexplored.Insert(mid++, toInsert);
                 }
                 Debug.Log("Added " + toInsert.x + "," + toInsert.y + " to unexplored locations.");
