@@ -532,7 +532,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51b617d46a8b38c4f9f2b78122db5a44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sideLength: 5
+  sideLength: 10
   pathfinder: {fileID: 972016729}
 --- !u!1 &1947184078
 GameObject:

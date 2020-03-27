@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BeatingHeart : MonoBehaviour
 {
-    public int sideLength = 30;
+    public int sideLength = 10;
     public planeCoord heartStart;
     public planeCoord heartFinish;
     public GameObject[,] grid;
