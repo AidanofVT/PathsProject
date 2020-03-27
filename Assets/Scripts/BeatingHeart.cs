@@ -20,7 +20,6 @@ public class BeatingHeart : MonoBehaviour
         clickedCellContainer = gameObject.GetComponent<ClickedCellContainer>();
         pathfinder.GetComponent<PathfinderScript>().pathfinderGrid = grid;
         pathfinder.GetComponent<PathfinderScript>().startUp(heartStart, heartFinish);
-        //pathfinder.GetComponent<PathfinderScript>().search();
     }
 
     void Update() {
@@ -29,7 +28,6 @@ public class BeatingHeart : MonoBehaviour
             Debug.Log("M1 up.");
             foreach (planeCoord entry in clickedCellContainer.get()) {
                 grid[entry.x, entry.y].GetComponent<SquareProperties>().clickedThisMouseDown = false;
-                Debug.Log(grid[entry.x, entry.y].GetComponent<SquareProperties>().clickedThisMouseDown);
             }
             clickedCellContainer.clear();
         }

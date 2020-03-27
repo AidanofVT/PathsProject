@@ -6,7 +6,7 @@ public class SquareProperties : MonoBehaviour
 {
     enum tileType {isWall, isNotWall};
     tileType thisTile = tileType.isNotWall;
-    public GameObject routeParent;
+    public GameObject routeParent = null;
     public bool clickedThisMouseDown = false;
     public planeCoord nameInCoordinates;
     public GameObject driver;

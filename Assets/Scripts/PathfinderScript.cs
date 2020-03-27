@@ -26,17 +26,20 @@ public class PathfinderScript : MonoBehaviour
 
         public void search () {
                 pokeAdjacentsToUnexplored();
-                //Seems to not conform to the While parameter.
+                unexplored.Remove(startPoint);
+                excludedCells.Add(startPoint);
+                pathfinderGrid[startPoint.x, startPoint.y].GetComponent<Renderer>().material.SetColor("_Color", Color.white);
                 while (unexplored.Count != 0 && workingCoordinate.compare(goalPoint) == false) {
-                        pathfinderGrid[workingCoordinate.x, workingCoordinate.y].GetComponent<Renderer>().material.SetColor("_Color", Color.white);
-                        excludedCells.Add(workingCoordinate);
-                        logLists(); 
                         workingCoordinate = unexplored[0];
                         unexplored.Remove(workingCoordinate);
                         pathfinderGrid[workingCoordinate.x, workingCoordinate.y].GetComponent<Renderer>().material.SetColor("_Color", Color.red);
                         pokeAdjacentsToUnexplored();
                         loopBreaker("search");
+                        pathfinderGrid[workingCoordinate.x, workingCoordinate.y].GetComponent<Renderer>().material.SetColor("_Color", Color.white);
+                        excludedCells.Add(workingCoordinate);
+                        logLists();
                 }
+                markPath(pathfinderGrid[workingCoordinate.x, workingCoordinate.y]);
                 Debug.Log("Search ended.");
         }
 
@@ -48,6 +51,7 @@ public class PathfinderScript : MonoBehaviour
                                                 if (isNewNavigable(pathfinderGrid[workingCoordinate.x + i, workingCoordinate.y + j]) == true) {
                                                         planeCoord toInsert = new planeCoord(workingCoordinate.x + i, workingCoordinate.y + j);
                                                         insertUnexplored(toInsert);
+                                                        pathfinderGrid[toInsert.x, toInsert.y].GetComponent<SquareProperties>().routeParent = pathfinderGrid[workingCoordinate.x, workingCoordinate.y];
                                                 }
                                         }
                                         catch (System.IndexOutOfRangeException) {
@@ -111,6 +115,18 @@ public class PathfinderScript : MonoBehaviour
                 }
                 Debug.Log("Added " + toInsert.x + "," + toInsert.y + " to unexplored locations.");
                 pathfinderGrid[toInsert.x, toInsert.y].GetComponent<Renderer>().material.SetColor("_Color", Color.yellow);
+        }
+
+        void markPath (GameObject square) {
+                try {
+                        if (square.GetComponent<SquareProperties>() == null && square != pathfinderGrid[startPoint.x, startPoint.y]) {
+                                throw new Exception("Attempted to mark a path from a square with no routeParent: " + square.GetComponent<SquareProperties>().nameInCoordinates.toInts());
+                        }
+                }
+                catch (UnassignedReferenceException) {                        
+                }
+                square.GetComponent<Renderer>().material.SetColor("_Color", Color.green);
+                markPath (square.GetComponent<SquareProperties>().routeParent);
         }
 
         void logLists () {
