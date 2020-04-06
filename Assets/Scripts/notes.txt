@@ -1,1 +1,0 @@
-problem: some points reported by insertUnexplored as added don't show up in the report made by loglists.

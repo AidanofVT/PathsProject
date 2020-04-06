@@ -6,7 +6,6 @@ using UnityEngine;
 
 public class PathfinderScript : MonoBehaviour
 {
-        public GameObject driver;
         public GameObject[,] pathfinderGrid;
         List<planeCoord> unPoked = new List<planeCoord>();
         List<planeCoord> excludedCells = new List<planeCoord>();
@@ -31,20 +30,22 @@ public class PathfinderScript : MonoBehaviour
                         pokeAdjacentsToUnexplored();
                         loopBreaker("search");
                 }
-                markPath(pathfinderGrid[workingCoordinate.x, workingCoordinate.y]);
                 Debug.Log("Search ended.");
+                markPath(pathfinderGrid[workingCoordinate.x, workingCoordinate.y]);
         }
 
         void changeWorkingCoordinate (planeCoord newWork) {
                 if (workingCoordinate != null) {
                         pathfinderGrid[workingCoordinate.x, workingCoordinate.y].GetComponent<Renderer>().material.SetColor("_Color", Color.white);
                         excludedCells.Add(workingCoordinate);
+                        //pathfinderGrid[newWork.x, newWork.y].GetComponent<SquareProperties>().routeParent = pathfinderGrid[workingCoordinate.x, workingCoordinate.y];
                 }
                 workingCoordinate = newWork;
                 pathfinderGrid[workingCoordinate.x, workingCoordinate.y].GetComponent<Renderer>().material.SetColor("_Color", Color.red);
         }
 
         void pokeAdjacentsToUnexplored () {
+                unPoked.Remove(workingCoordinate);
                 for (int i = -1; i <= 1; i++) {
                         for (int j = -1; j <= 1; j++) {
                                 if (i != 0 || j != 0) {
@@ -61,7 +62,6 @@ public class PathfinderScript : MonoBehaviour
                                 }
                         }
                 }
-                unPoked.Remove(workingCoordinate);
                 logLists();
 
         }
@@ -92,14 +92,14 @@ public class PathfinderScript : MonoBehaviour
         }
 
         void insertUnpoked (planeCoord toInsert) {
-                float newAppeal = toInsert.distanceTo(goalPoint);// + toInsert.distanceTo(startPoint) / 2;
+                float newAppeal = toInsert.distanceTo(goalPoint);
                 float midAppeal = 0.0f;
                 int min = 0;
                 int max = unPoked.Count - 1;
                 int mid = (min + max) / 2;
                 while (min <= max) {
                         mid = (min + max) / 2;
-                        midAppeal = unPoked[mid].distanceTo(goalPoint);// + unPoked[mid].distanceTo(startPoint) / 2;
+                        midAppeal = unPoked[mid].distanceTo(goalPoint);
                         if  (newAppeal == midAppeal) {  
                                 break;
                         }  
@@ -114,7 +114,7 @@ public class PathfinderScript : MonoBehaviour
                 if  (newAppeal < midAppeal) {
                         unPoked.Insert(mid, toInsert);
                 }
-                else if (newAppeal > midAppeal) {
+                else {
                         unPoked.Insert(mid++, toInsert);
                 }
                 Debug.Log("Added " + toInsert.x + "," + toInsert.y + " to unexplored locations.");

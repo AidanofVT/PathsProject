@@ -19,10 +19,17 @@ public class SquareProperties : MonoBehaviour
         if (clickedThisMouseDown == false) {
             if (thisTile == tileType.isNotWall) {
                 setAsWall();
+                driver.GetComponent<BeatingHeart>().wallCells.Add(gameObject);
             }
             else {
                 setAsNotWall();
+                driver.GetComponent<BeatingHeart>().wallCells.Remove(gameObject);
             }
+            string toPrint = null;
+            foreach (GameObject entry in driver.GetComponent<BeatingHeart>().wallCells) {
+                toPrint = toPrint + entry.GetComponent<SquareProperties>().nameInCoordinates.x + "," + entry.GetComponent<SquareProperties>().nameInCoordinates.y + " -- ";
+            }
+            Debug.Log(toPrint);
             clickedThisMouseDown = true;
             driver.GetComponent<ClickedCellContainer>().add(nameInCoordinates);
         }

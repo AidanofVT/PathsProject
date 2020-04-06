@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BeatingHeart : MonoBehaviour
-{
+public class BeatingHeart : MonoBehaviour {
     public int sideLength = 10;
     public planeCoord heartStart;
     public planeCoord heartFinish;
     public GameObject[,] grid;
+    public List<GameObject> wallCells = new List<GameObject>();
     ClickedCellContainer clickedCellContainer;
     GenerateGrid gridBuilder;
     public GameObject pathfinder;
@@ -25,11 +25,11 @@ public class BeatingHeart : MonoBehaviour
     void Update() {
         bool mouseUpThisFrame = Input.GetKeyUp(KeyCode.Mouse0);
         if (mouseUpThisFrame) {
-            Debug.Log("M1 up.");
             foreach (planeCoord entry in clickedCellContainer.get()) {
                 grid[entry.x, entry.y].GetComponent<SquareProperties>().clickedThisMouseDown = false;
+                wallCells.Add(grid[entry.x, entry.y]);
             }
             clickedCellContainer.clear();
-        }
+        }        
     }
 }

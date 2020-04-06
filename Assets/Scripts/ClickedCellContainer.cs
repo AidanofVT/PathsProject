@@ -8,7 +8,6 @@ public class ClickedCellContainer : MonoBehaviour
 
     public void add (planeCoord coordinateName) {
         cellsChangedThisClick.Add(coordinateName);
-        this.print();
     }
 
     public void print () {
