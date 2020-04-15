@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SquareProperties : MonoBehaviour
 {
@@ -29,7 +30,7 @@ public class SquareProperties : MonoBehaviour
             foreach (GameObject entry in driver.GetComponent<BeatingHeart>().wallCells) {
                 toPrint = toPrint + entry.GetComponent<SquareProperties>().nameInCoordinates.x + "," + entry.GetComponent<SquareProperties>().nameInCoordinates.y + " -- ";
             }
-            Debug.Log(toPrint);
+            //Debug.Log(toPrint);
             clickedThisMouseDown = true;
             driver.GetComponent<ClickedCellContainer>().add(nameInCoordinates);
         }
@@ -46,7 +47,8 @@ public class SquareProperties : MonoBehaviour
     }
 
     public bool isWall () {
-        if (thisTile == tileType.isWall) {
+        Debug.Log(nameInCoordinates.x + "," + nameInCoordinates.y + " isWall = " + (thisTile.Equals(tileType.isWall)));
+        if (thisTile.Equals(tileType.isWall)) {
             return true;
         }
         return false;

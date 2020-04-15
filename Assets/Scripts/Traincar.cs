@@ -1,23 +1,38 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class Traincar {
+public class Traincar : MonoBehaviour {
     public enum direction {north, east, south, west, error};
     direction currentTravelDirection = direction.north;
     GameObject[,] map = GameObject.Find("Driver").GetComponent<BeatingHeart>().grid;
-    public planeCoord currentCoord;
+    public planeCoord currentCoord; //skipped on run?
+    GameObject localCarSign;
+    int limit = 500;
+    int limiter = 0;
 
-    public Traincar (planeCoord startingCoord) {
+    public Traincar (planeCoord startingCoord, GameObject carSign) {
         currentCoord = startingCoord;
+        localCarSign = carSign;
     }
 
     public void advance () {
-        currentTravelDirection = counterClockWise(counterClockWise(currentTravelDirection));
-        while (adjacentCell(currentTravelDirection).GetComponent<SquareProperties>().isWall() == false) {
-            currentTravelDirection = counterClockWise(currentTravelDirection);
+        currentTravelDirection = counterClockWise(currentTravelDirection);
+        try {
+            while (adjacentCell(currentTravelDirection).GetComponent<SquareProperties>().isWall() == false) { 
+                // this while criteria doesn't work properly. 
+                currentTravelDirection = clockWise(currentTravelDirection);
+                loopBreaker("Traincar advance");
+            }
+        }
+        catch (System.NullReferenceException) {
+            currentTravelDirection = clockWise(currentTravelDirection);
+            currentTravelDirection = clockWise(currentTravelDirection);
         }
         map[currentCoord.x, currentCoord.y].GetComponent<Renderer>().material.SetColor("_Color", Color.grey);
+        localCarSign.GetComponent<Transform>().position = adjacentCell(currentTravelDirection).GetComponent<Transform>().position;
         currentCoord = adjacentCell(currentTravelDirection).GetComponent<SquareProperties>().nameInCoordinates;
         map[currentCoord.x, currentCoord.y].GetComponent<Renderer>().material.SetColor("_Color", Color.blue);
     }
@@ -69,12 +84,19 @@ public class Traincar {
                     return map[currentCoord.x, currentCoord.y - 1];
                 break;
                 case direction.west:
-                    return map[currentCoord.x, currentCoord.y - 1];
+                    return map[currentCoord.x - 1, currentCoord.y];
                 break;
             }
         }
         catch (System.IndexOutOfRangeException) {
         }
         return null;
+    }
+
+    void loopBreaker (string problemArea) {
+        limiter++;
+        if (limiter >= limit) {
+                throw new Exception("Infinite loop in " + problemArea + " function broken.");
+        }
     }
 }

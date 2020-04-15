@@ -148,9 +148,6 @@ public class PathfinderScript : MonoBehaviour
 
         void loopBreaker (string problemArea) {
                 limiter++;
-                if (limiter == 500) {
-
-                }
                 if (limiter >= limit) {
                         throw new Exception("Infinite loop in " + problemArea + " function broken.");
                 }
