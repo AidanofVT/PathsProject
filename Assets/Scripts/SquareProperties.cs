@@ -47,7 +47,6 @@ public class SquareProperties : MonoBehaviour
     }
 
     public bool isWall () {
-        Debug.Log(nameInCoordinates.x + "," + nameInCoordinates.y + " isWall = " + (thisTile.Equals(tileType.isWall)));
         if (thisTile.Equals(tileType.isWall)) {
             return true;
         }

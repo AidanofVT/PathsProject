@@ -12,6 +12,7 @@ public class Train : MonoBehaviour {
     public GameObject Textie;
     int limit = 500;
     int limiter = 0;
+    bool chooed = false;
 
     private void Awake() {
         walls = driver.GetComponent<BeatingHeart>().wallCells;
@@ -22,24 +23,45 @@ public class Train : MonoBehaviour {
         planeCoord startPoint = walls[0].GetComponent<SquareProperties>().nameInCoordinates;
         Vector2 location = walls[0].GetComponent<Transform>().position;
         for (int i = 1; i <= 5; i++) {
-                GameObject carSign = Instantiate(Textie, location, Quaternion.identity);
-                carSign.transform.SetParent(canvas.transform);
-                carSign.GetComponent<Text>().text = i.ToString();
+            GameObject carSign = Instantiate(Textie, location, Quaternion.identity);
+            carSign.transform.SetParent(canvas.transform);
+            carSign.GetComponent<Text>().text = i.ToString();
+            if (i == 3) {
+                Midcar newCar = new Midcar(startPoint, carSign);
+                cars.Add(newCar);
+            }
+            else {
                 Traincar newCar = new Traincar(startPoint, carSign);
                 cars.Add(newCar);
-                advance();
-                loopBreaker("choochoo");
+            }
+            advance(0);
         }
+        for (int i = 0; i < 5; i++ ) {
+            try {
+                cars[i].priorCar = cars[i - 1];
+            }
+            catch (System.ArgumentOutOfRangeException) {
+            }
+            try {
+                cars[i].nextCar = cars[i + 1];
+            }
+            catch (System.ArgumentOutOfRangeException) {
+            }
+        }
+        chooed = true;
     }
 
     private void FixedUpdate() {
-        advance();
+        advance(2);
     }
 
-    void advance () {
+    void advance (int mode) {
         foreach (Traincar car in cars) {
             car.advance();
             loopBreaker("Train advance");
+        }
+        if (mode == 2 && chooed == true) {
+            ((Midcar)cars[2]).scan();
         }
     }
 

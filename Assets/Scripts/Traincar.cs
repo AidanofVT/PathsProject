@@ -6,9 +6,11 @@ using UnityEngine.UI;
 
 public class Traincar : MonoBehaviour {
     public enum direction {north, east, south, west, error};
-    direction currentTravelDirection = direction.north;
+    public direction currentTravelDirection = direction.north;
+    public planeCoord currentCoord;
+    public Traincar nextCar;
+    public Traincar priorCar;
     GameObject[,] map = GameObject.Find("Driver").GetComponent<BeatingHeart>().grid;
-    public planeCoord currentCoord; //skipped on run?
     GameObject localCarSign;
     int limit = 500;
     int limiter = 0;
@@ -22,7 +24,6 @@ public class Traincar : MonoBehaviour {
         currentTravelDirection = counterClockWise(currentTravelDirection);
         try {
             while (adjacentCell(currentTravelDirection).GetComponent<SquareProperties>().isWall() == false) { 
-                // this while criteria doesn't work properly. 
                 currentTravelDirection = clockWise(currentTravelDirection);
                 loopBreaker("Traincar advance");
             }
@@ -37,7 +38,7 @@ public class Traincar : MonoBehaviour {
         map[currentCoord.x, currentCoord.y].GetComponent<Renderer>().material.SetColor("_Color", Color.blue);
     }
 
-    direction clockWise (direction current) {
+    protected direction clockWise (direction current) {
         switch (current) {
             case direction.north:
                 return direction.east;
@@ -54,7 +55,7 @@ public class Traincar : MonoBehaviour {
         return direction.error;
     }
 
-    direction counterClockWise (direction current) {
+    protected direction counterClockWise (direction current) {
         switch (current) {
             case direction.north:
                 return direction.west;
@@ -71,7 +72,7 @@ public class Traincar : MonoBehaviour {
         return direction.error;
     }
 
-    GameObject adjacentCell (direction inDirection) {
+    protected GameObject adjacentCell (direction inDirection) {
         try {
             switch (inDirection) {
                 case direction.north:
