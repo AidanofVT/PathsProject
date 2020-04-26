@@ -19,22 +19,21 @@ public class Train : MonoBehaviour {
     }
 
     public void chooChoo () {
-        Time.fixedDeltaTime = 0.7f;
+        //Time.fixedDeltaTime = 0.7f;
         planeCoord startPoint = walls[0].GetComponent<SquareProperties>().nameInCoordinates;
-        Vector2 location = walls[0].GetComponent<Transform>().position;
+        Vector2 signStart = walls[0].GetComponent<Transform>().position;
         for (int i = 1; i <= 5; i++) {
-            GameObject carSign = Instantiate(Textie, location, Quaternion.identity);
-            carSign.transform.SetParent(canvas.transform);
-            carSign.GetComponent<Text>().text = i.ToString();
             if (i == 3) {
-                Midcar newCar = new Midcar(startPoint, carSign);
+                Midcar newCar = new Midcar(startPoint, mark(signStart, i.ToString()));
+                newCar.parentTrain = this;
                 cars.Add(newCar);
             }
             else {
-                Traincar newCar = new Traincar(startPoint, carSign);
+                Traincar newCar = new Traincar(startPoint, mark(signStart, i.ToString()));
+                newCar.parentTrain = this;
                 cars.Add(newCar);
             }
-            advance(0);
+            advance();
         }
         for (int i = 0; i < 5; i++ ) {
             try {
@@ -51,18 +50,25 @@ public class Train : MonoBehaviour {
         chooed = true;
     }
 
-    private void FixedUpdate() {
-        advance(2);
-    }
+    // private void FixedUpdate() {
+    //     advance();
+    // }
 
-    void advance (int mode) {
+    public void advance () {
         foreach (Traincar car in cars) {
             car.advance();
             loopBreaker("Train advance");
         }
-        if (mode == 2 && chooed == true) {
+        if (chooed == true) {
             ((Midcar)cars[2]).scan();
         }
+    }
+
+    public GameObject mark (Vector2 wherePut, string toDisplay) {
+        GameObject sign  = Instantiate(Textie, wherePut, Quaternion.identity);
+        sign.transform.SetParent(canvas.transform);
+        sign.GetComponent<Text>().text = toDisplay;
+        return sign;
     }
 
     void loopBreaker (string problemArea) {

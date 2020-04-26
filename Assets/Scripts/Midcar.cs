@@ -16,16 +16,37 @@ public class Midcar : Traincar {
     }
 
     public void scan () {
-        if (nextCar.currentTravelDirection == nextCar.nextCar.currentTravelDirection
-        && nextCar.currentTravelDirection == clockWise(currentTravelDirection)
-        && nextCar.nextCar.currentTravelDirection == clockWise(currentTravelDirection)) {
-            Debug.Log("ClockWise turn identified.");
-        }
-        if (nextCar.currentTravelDirection == nextCar.nextCar.currentTravelDirection
-        && nextCar.currentTravelDirection == counterClockWise(currentTravelDirection)
-        && nextCar.nextCar.currentTravelDirection == counterClockWise(currentTravelDirection)) {
-            Debug.Log("Counter-clockWise turn identified.");
+        Debug.Log("Commencing scan from " + currentCoord.x + "," + currentCoord.y);
+        checkForCorner();
+        Debug.Log("Concluded scan from " + currentCoord.x + "," + currentCoord.y);
+    }
+
+    void checkForCorner() {
+        Debug.Log("Commencing scan from " + currentCoord.x + "," + currentCoord.y);
+        if (relativePosition(nextCar.currentCoord) == relativePosition(nextCar.nextCar.currentCoord)
+        && relativePosition(nextCar.currentCoord) == clockWise(clockWise(currentTravelDirection))
+        && relativePosition(priorCar.currentCoord) == relativePosition(priorCar.priorCar.currentCoord)) {
+            GameObject targetSquare = null;
+            if (relativePosition(priorCar.currentCoord) == clockWise(currentTravelDirection)) {
+                Debug.Log("Clockwise turn identified.");
+                targetSquare = adjacentCell(counterClockWise(currentTravelDirection), true);
+            }
+            else if (relativePosition(priorCar.currentCoord) == counterClockWise(currentTravelDirection)) {
+                Debug.Log("Counter-clockwise turn identified.");
+                targetSquare = adjacentCell(currentTravelDirection, true);
+            }
+            else if (relativePosition(priorCar.currentCoord) == clockWise(clockWise(currentTravelDirection))) {
+                Debug.Log("About-face turn identified.");
+                targetSquare = adjacentCell(currentTravelDirection);
+            }
+            tagSquare(targetSquare, "C", "isNotWall");
         }
     }
 
+    void tagSquare (GameObject toTag, string tagMessage, string requiredState) {
+        if (toTag.GetComponent<SquareProperties>().getState() == requiredState) {
+            Vector2 targetSquarePos = toTag.GetComponent<Transform>().position;
+            toTag.GetComponent<SquareProperties>().mark(targetSquarePos, tagMessage);
+        }
+    }
 }

@@ -10,6 +10,10 @@ public class Traincar : MonoBehaviour {
     public planeCoord currentCoord;
     public Traincar nextCar;
     public Traincar priorCar;
+    public Train parentTrain;
+    public Canvas canvas;
+    public GameObject Textie;
+
     GameObject[,] map = GameObject.Find("Driver").GetComponent<BeatingHeart>().grid;
     GameObject localCarSign;
     int limit = 500;
@@ -21,21 +25,23 @@ public class Traincar : MonoBehaviour {
     }
 
     public void advance () {
+        Debug.Log("Commencing move from " + currentCoord.x + "," + currentCoord.y);
         currentTravelDirection = counterClockWise(currentTravelDirection);
         try {
-            while (adjacentCell(currentTravelDirection).GetComponent<SquareProperties>().isWall() == false) { 
+            while (adjacentCell(currentTravelDirection).GetComponent<SquareProperties>().getState() != "isWall") { 
                 currentTravelDirection = clockWise(currentTravelDirection);
                 loopBreaker("Traincar advance");
             }
         }
         catch (System.NullReferenceException) {
             currentTravelDirection = clockWise(currentTravelDirection);
-            currentTravelDirection = clockWise(currentTravelDirection);
+            //currentTravelDirection = clockWise(currentTravelDirection);
         }
-        map[currentCoord.x, currentCoord.y].GetComponent<Renderer>().material.SetColor("_Color", Color.grey);
+        //map[currentCoord.x, currentCoord.y].GetComponent<Renderer>().material.SetColor("_Color", Color.grey);
         localCarSign.GetComponent<Transform>().position = adjacentCell(currentTravelDirection).GetComponent<Transform>().position;
         currentCoord = adjacentCell(currentTravelDirection).GetComponent<SquareProperties>().nameInCoordinates;
-        map[currentCoord.x, currentCoord.y].GetComponent<Renderer>().material.SetColor("_Color", Color.blue);
+        //map[currentCoord.x, currentCoord.y].GetComponent<Renderer>().material.SetColor("_Color", Color.blue);
+        Debug.Log("Concluded move to " + currentCoord.x + "," + currentCoord.y);
     }
 
     protected direction clockWise (direction current) {
@@ -72,19 +78,31 @@ public class Traincar : MonoBehaviour {
         return direction.error;
     }
 
-    protected GameObject adjacentCell (direction inDirection) {
+    protected GameObject adjacentCell (direction inDirection, bool plusFourtyFive = false) {
         try {
             switch (inDirection) {
                 case direction.north:
+                    if (plusFourtyFive == true) {
+                        return map[currentCoord.x + 1, currentCoord.y + 1];
+                    }
                     return map[currentCoord.x, currentCoord.y + 1];
                 break;
                 case direction.east:
+                    if (plusFourtyFive == true) {
+                        return map[currentCoord.x + 1, currentCoord.y - 1];
+                    }
                     return map[currentCoord.x + 1, currentCoord.y];
                 break;
                 case direction.south:
+                    if (plusFourtyFive == true) {
+                        return map[currentCoord.x - 1, currentCoord.y - 1];
+                    }                
                     return map[currentCoord.x, currentCoord.y - 1];
                 break;
                 case direction.west:
+                    if (plusFourtyFive == true) {
+                        return map[currentCoord.x - 1, currentCoord.y + 1];
+                    }
                     return map[currentCoord.x - 1, currentCoord.y];
                 break;
             }
@@ -92,6 +110,22 @@ public class Traincar : MonoBehaviour {
         catch (System.IndexOutOfRangeException) {
         }
         return null;
+    }
+
+    protected direction relativePosition (planeCoord otherSquare) {
+        if (otherSquare.x == currentCoord.x && otherSquare.y >= currentCoord.y) {
+            return direction.north;
+        }
+        else if (otherSquare.x == currentCoord.x && otherSquare.y <= currentCoord.y) {
+            return direction.south;
+        }
+        else if (otherSquare.y == currentCoord.y && otherSquare.x >= currentCoord.x) {
+            return direction.east;
+        }
+        else if (otherSquare.y == currentCoord.y && otherSquare.x <= currentCoord.x) {
+            return direction.west;
+        }
+        return direction.error;
     }
 
     void loopBreaker (string problemArea) {

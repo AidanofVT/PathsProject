@@ -74,7 +74,7 @@ public class PathfinderScript : MonoBehaviour
                 if (searchListForPlaneCoord(unPoked, maybeWall.GetComponent<SquareProperties>().nameInCoordinates)) {
                         return false;
                 }
-                else if (maybeWall.GetComponent<SquareProperties>().isWall() == true) {
+                else if (maybeWall.GetComponent<SquareProperties>().getState() == "isWall") {
                         excludedCells.Add(maybeWall.GetComponent<SquareProperties>().nameInCoordinates);
                         maybeWall.GetComponent<Renderer>().material.SetColor("_Color", Color.black);
                         return false;
