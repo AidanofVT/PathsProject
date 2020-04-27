@@ -28,15 +28,21 @@ public class Midcar : Traincar {
         && relativePosition(priorCar.currentCoord) == relativePosition(priorCar.priorCar.currentCoord)) {
             if (relativePosition(priorCar.currentCoord) == clockWise(currentTravelDirection)) {
                 Debug.Log("Clockwise turn identified.");
-                tagSquare(adjacentCell(counterClockWise(currentTravelDirection), true), "C", "isNotWall");
+                GameObject toTag = adjacentCell(counterClockWise(currentTravelDirection), true);
+                tagSquare(toTag, "C", "isNotWall");
+                parentTrain.currentTrack.associatedCorners.Add(toTag, "clockwise");
             }
             else if (relativePosition(priorCar.currentCoord) == counterClockWise(currentTravelDirection)) {
                 Debug.Log("Counter-clockwise turn identified.");
-                tagSquare(adjacentCell(currentTravelDirection, true), "C", "isNotWall");
+                GameObject toTag = adjacentCell(currentTravelDirection, true);
+                tagSquare(toTag, "C", "isNotWall");
+                parentTrain.currentTrack.associatedCorners.Add(toTag, "counter-clockwise");
             }
             else if (relativePosition(priorCar.currentCoord) == clockWise(clockWise(currentTravelDirection))) {
                 Debug.Log("About-face turn identified.");
-                tagSquare(adjacentCell(currentTravelDirection), "C", "isNotWall");
+                GameObject toTag = adjacentCell(currentTravelDirection);
+                tagSquare(toTag, "C", "isNotWall");
+                parentTrain.currentTrack.associatedCorners.Add(toTag, null);
             }
         }
     }

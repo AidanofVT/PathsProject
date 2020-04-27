@@ -6,16 +6,21 @@ using UnityEngine.UI;
 
 public class Train : MonoBehaviour {
     List<Traincar> cars = new List<Traincar>(5);
+    List<Obstacle> obstacles = new List<Obstacle>();
+    public Obstacle currentTrack = null;
     public GameObject driver;
     List<GameObject> walls;
     public Canvas canvas;
     public GameObject Textie;
+    string[] obsticalNamesArray = {"Z","Y","X","W","V","U"};
+    List<string> obsticalNames;
     int limit = 500;
     int limiter = 0;
     bool go = false;
 
     private void Awake() {
         walls = driver.GetComponent<BeatingHeart>().wallCells;
+        obsticalNames = new List<string>(obsticalNamesArray);
     }
 
     public void conduct () {
@@ -24,6 +29,7 @@ public class Train : MonoBehaviour {
             advance();
             loopBreaker("Conduct");
         }
+        destroyTrain();
         Debug.Log("Finished crawling.");
     }
 
@@ -70,19 +76,19 @@ public class Train : MonoBehaviour {
             loopBreaker("train advance");
         }
         if (go == true) {
+            if (currentTrack == null) {
+                currentTrack = new Obstacle();
+            }
             ((Midcar)cars[2]).scan();
+            currentTrack.constituentWalls.Add(cars[2].getSquare());
+            mark(cars[2].getSquare().GetComponent<Transform>().position, obsticalNames[0]);
             walls.Remove(cars[2].getSquare());
             if (walls.Count == 0) {
                 return;
             }
             else if (cars[2].getSquare().GetComponent<SquareProperties>().getState() == "trainStart"
                     && walls.Contains(cars[1].getSquare()) == false) {
-                foreach (Traincar car in cars) {
-                    car.destroyCarSign();
-                }
-                cars.Clear();
-                go = false;
-                chooChoo();
+                changeTrack();
                 return;
             }
         }
@@ -93,6 +99,25 @@ public class Train : MonoBehaviour {
         sign.transform.SetParent(canvas.transform);
         sign.GetComponent<Text>().text = toDisplay;
         return sign;
+    }
+
+    void changeTrack () {
+        destroyTrain();
+        if (currentTrack.size() >= 5) {
+            Obstacle addCopy = currentTrack;
+            obstacles.Add(addCopy);
+        }
+        obsticalNames.RemoveAt(0);
+        currentTrack = null;
+        go = false;
+        chooChoo();
+    }
+
+    void destroyTrain () {
+        foreach (Traincar car in cars) {
+            car.destroyCarSign();
+        }
+        cars.Clear();
     }
 
     void loopBreaker (string problemArea) {
