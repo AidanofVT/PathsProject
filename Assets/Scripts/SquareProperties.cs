@@ -28,20 +28,18 @@ public class SquareProperties : MonoBehaviour
                 if (clickedThisMouseDown == false) {
                     if (thisTile == tileType.isNotWall) {
                         setAsWall();
-                        driver.GetComponent<BeatingHeart>().wallCells.Add(gameObject);
                     }
-                    else {
+                    else if (thisTile == tileType.isWall) {
                         setAsNotWall();
-                        driver.GetComponent<BeatingHeart>().wallCells.Remove(gameObject);
                     }
-                    clickedThisMouseDown = true;
                     driver.GetComponent<ClickedCellContainer>().add(nameInCoordinates);
+                    clickedThisMouseDown = true;
                 }
             break;
             case "cornerAdjacent":
                 thisTile = tileType.cornerAdjacent;
             break;
-            case "tranStart":
+            case "trainStart":
                 thisTile = tileType.trainStart;
             break;
         }

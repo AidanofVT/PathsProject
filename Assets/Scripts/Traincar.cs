@@ -13,7 +13,6 @@ public class Traincar : MonoBehaviour {
     public Train parentTrain;
     public Canvas canvas;
     public GameObject Textie;
-
     GameObject[,] map = GameObject.Find("Driver").GetComponent<BeatingHeart>().grid;
     GameObject localCarSign;
     int limit = 500;
@@ -28,7 +27,8 @@ public class Traincar : MonoBehaviour {
         Debug.Log("Commencing move from " + currentCoord.x + "," + currentCoord.y);
         currentTravelDirection = counterClockWise(currentTravelDirection);
         try {
-            while (adjacentCell(currentTravelDirection).GetComponent<SquareProperties>().getState() != "isWall") { 
+            while (adjacentCell(currentTravelDirection).GetComponent<SquareProperties>().getState() != "isWall" 
+                    && adjacentCell(currentTravelDirection).GetComponent<SquareProperties>().getState() != "trainStart") { 
                 currentTravelDirection = clockWise(currentTravelDirection);
                 loopBreaker("Traincar advance");
             }
@@ -37,10 +37,8 @@ public class Traincar : MonoBehaviour {
             currentTravelDirection = clockWise(currentTravelDirection);
             //currentTravelDirection = clockWise(currentTravelDirection);
         }
-        //map[currentCoord.x, currentCoord.y].GetComponent<Renderer>().material.SetColor("_Color", Color.grey);
         localCarSign.GetComponent<Transform>().position = adjacentCell(currentTravelDirection).GetComponent<Transform>().position;
         currentCoord = adjacentCell(currentTravelDirection).GetComponent<SquareProperties>().nameInCoordinates;
-        //map[currentCoord.x, currentCoord.y].GetComponent<Renderer>().material.SetColor("_Color", Color.blue);
         Debug.Log("Concluded move to " + currentCoord.x + "," + currentCoord.y);
     }
 
@@ -126,6 +124,14 @@ public class Traincar : MonoBehaviour {
             return direction.west;
         }
         return direction.error;
+    }
+
+    public GameObject getSquare () {
+        return map[currentCoord.x, currentCoord.y];
+    }
+
+    public void destroyCarSign () {
+        Destroy(localCarSign);
     }
 
     void loopBreaker (string problemArea) {

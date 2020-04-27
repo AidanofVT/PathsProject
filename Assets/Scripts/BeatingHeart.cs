@@ -25,9 +25,15 @@ public class BeatingHeart : MonoBehaviour {
     void Update() {
         bool mouseUpThisFrame = Input.GetKeyUp(KeyCode.Mouse0);
         if (mouseUpThisFrame) {
-            foreach (planeCoord entry in clickedCellContainer.get()) {
+            List<planeCoord> toChange = clickedCellContainer.get();
+            foreach (planeCoord entry in toChange) {
                 grid[entry.x, entry.y].GetComponent<SquareProperties>().clickedThisMouseDown = false;
-                wallCells.Add(grid[entry.x, entry.y]);
+                if (wallCells.Contains(grid[entry.x, entry.y]) == false) {
+                    wallCells.Add(grid[entry.x, entry.y]);
+                }
+                else {
+                    wallCells.Remove(grid[entry.x, entry.y]);
+                }
             }
             clickedCellContainer.clear();
         }        

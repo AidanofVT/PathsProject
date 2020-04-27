@@ -12,10 +12,19 @@ public class Train : MonoBehaviour {
     public GameObject Textie;
     int limit = 500;
     int limiter = 0;
-    bool chooed = false;
+    bool go = false;
 
     private void Awake() {
         walls = driver.GetComponent<BeatingHeart>().wallCells;
+    }
+
+    public void conduct () {
+        chooChoo();
+        while (walls.Count > 0) {
+            advance();
+            loopBreaker("Conduct");
+        }
+        Debug.Log("Finished crawling.");
     }
 
     public void chooChoo () {
@@ -47,7 +56,8 @@ public class Train : MonoBehaviour {
             catch (System.ArgumentOutOfRangeException) {
             }
         }
-        chooed = true;
+        cars[2].getSquare().GetComponent<SquareProperties>().changeState("trainStart");
+        go = true;
     }
 
     // private void FixedUpdate() {
@@ -57,10 +67,24 @@ public class Train : MonoBehaviour {
     public void advance () {
         foreach (Traincar car in cars) {
             car.advance();
-            loopBreaker("Train advance");
+            loopBreaker("train advance");
         }
-        if (chooed == true) {
+        if (go == true) {
             ((Midcar)cars[2]).scan();
+            walls.Remove(cars[2].getSquare());
+            if (walls.Count == 0) {
+                return;
+            }
+            else if (cars[2].getSquare().GetComponent<SquareProperties>().getState() == "trainStart"
+                    && walls.Contains(cars[1].getSquare()) == false) {
+                foreach (Traincar car in cars) {
+                    car.destroyCarSign();
+                }
+                cars.Clear();
+                go = false;
+                chooChoo();
+                return;
+            }
         }
     }
 
