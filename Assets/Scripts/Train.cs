@@ -29,7 +29,7 @@ public class Train : MonoBehaviour {
             advance();
             loopBreaker("Conduct");
         }
-        destroyTrain();
+        endTrack();
         Debug.Log("Finished crawling.");
     }
 
@@ -66,10 +66,6 @@ public class Train : MonoBehaviour {
         go = true;
     }
 
-    // private void FixedUpdate() {
-    //     advance();
-    // }
-
     public void advance () {
         foreach (Traincar car in cars) {
             car.advance();
@@ -81,14 +77,10 @@ public class Train : MonoBehaviour {
             }
             ((Midcar)cars[2]).scan();
             currentTrack.constituentWalls.Add(cars[2].getSquare());
-            mark(cars[2].getSquare().GetComponent<Transform>().position, obsticalNames[0]);
-            walls.Remove(cars[2].getSquare());
-            if (walls.Count == 0) {
-                return;
-            }
-            else if (cars[2].getSquare().GetComponent<SquareProperties>().getState() == "trainStart"
-                    && walls.Contains(cars[1].getSquare()) == false) {
-                changeTrack();
+            walls.Remove(cars[2].getSquare());          
+            if (cars[2].getSquare().GetComponent<SquareProperties>().getState() == "trainStart"
+            && walls.Contains(cars[1].getSquare()) == false) {
+                endTrack();
                 return;
             }
         }
@@ -101,16 +93,23 @@ public class Train : MonoBehaviour {
         return sign;
     }
 
-    void changeTrack () {
+    void endTrack () {
+        Debug.Log("End track called." + "Walls size  = " + walls.Count + ".");
         destroyTrain();
         if (currentTrack.size() >= 5) {
             Obstacle addCopy = currentTrack;
+            foreach (GameObject memberSquare in currentTrack.constituentWalls) {
+                mark(memberSquare.GetComponent<Transform>().position, obsticalNames[0]);
+                memberSquare.GetComponent<SquareProperties>().greatWall = addCopy;
+            }
             obstacles.Add(addCopy);
+            obsticalNames.RemoveAt(0);
         }
-        obsticalNames.RemoveAt(0);
         currentTrack = null;
         go = false;
-        chooChoo();
+        if (walls.Count > 0) {
+            chooChoo();
+        }
     }
 
     void destroyTrain () {

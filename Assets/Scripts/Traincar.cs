@@ -15,7 +15,7 @@ public class Traincar : MonoBehaviour {
     public GameObject Textie;
     GameObject[,] map = GameObject.Find("Driver").GetComponent<BeatingHeart>().grid;
     GameObject localCarSign;
-    int limit = 500;
+    int limit = 2000;
     int limiter = 0;
 
     public Traincar (planeCoord startingCoord, GameObject carSign) {
@@ -24,22 +24,18 @@ public class Traincar : MonoBehaviour {
     }
 
     public void advance () {
-        Debug.Log("Commencing move from " + currentCoord.x + "," + currentCoord.y);
+        //Debug.Log("Commencing move from " + currentCoord.x + "," + currentCoord.y);
         currentTravelDirection = counterClockWise(currentTravelDirection);
-        try {
-            while (adjacentCell(currentTravelDirection).GetComponent<SquareProperties>().getState() != "isWall" 
-                    && adjacentCell(currentTravelDirection).GetComponent<SquareProperties>().getState() != "trainStart") { 
-                currentTravelDirection = clockWise(currentTravelDirection);
-                loopBreaker("Traincar advance");
-            }
-        }
-        catch (System.NullReferenceException) {
+        while (isNavigableWall(adjacentCell(currentTravelDirection)) == false) { 
             currentTravelDirection = clockWise(currentTravelDirection);
-            //currentTravelDirection = clockWise(currentTravelDirection);
+            loopBreaker("Traincar advance");
+        }
+        if (adjacentCell(currentTravelDirection) == null) {
+
         }
         localCarSign.GetComponent<Transform>().position = adjacentCell(currentTravelDirection).GetComponent<Transform>().position;
         currentCoord = adjacentCell(currentTravelDirection).GetComponent<SquareProperties>().nameInCoordinates;
-        Debug.Log("Concluded move to " + currentCoord.x + "," + currentCoord.y);
+        //Debug.Log("Concluded move to " + currentCoord.x + "," + currentCoord.y);
     }
 
     protected direction clockWise (direction current) {
@@ -74,6 +70,18 @@ public class Traincar : MonoBehaviour {
                 return direction.south;
         }
         return direction.error;
+    }
+
+    bool isNavigableWall (GameObject maybeNavigable) {
+        try {
+            if (maybeNavigable.GetComponent<SquareProperties>().getState() == "isWall"
+            || maybeNavigable.GetComponent<SquareProperties>().getState() == "trainStart") {
+                return true;
+            }
+        }
+        catch (System.NullReferenceException) {
+        }
+        return false;
     }
 
     protected GameObject adjacentCell (direction inDirection, bool plusFourtyFive = false) {

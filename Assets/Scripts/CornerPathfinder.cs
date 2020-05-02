@@ -4,13 +4,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PathfinderScript : MonoBehaviour {
+public class CornerPathfinder : MonoBehaviour {
         public GameObject[,] pathfinderGrid;
         List<planeCoord> unPoked = new List<planeCoord>();
         List<planeCoord> excludedCells = new List<planeCoord>();
         public planeCoord startPoint;
         public planeCoord goalPoint;
         planeCoord workingCoordinate;
+        char currentBlocker;
+        bool cornerSearchFinished = false;
         int limiter = 0;
         int limit  = 2000;
 
@@ -21,21 +23,28 @@ public class PathfinderScript : MonoBehaviour {
                 unPoked.Add(workingCoordinate);
         }
 
-        public void classicA () {
+        public List<planeCoord> classicA (planeCoord legStart, planeCoord legEnd) {
+                changeWorkingCoordinate(legStart);
                 pokeAdjacentsToUnexplored();
                 unPoked.Remove(startPoint);
-                while (unPoked.Count != 0 && workingCoordinate.compare(goalPoint) == false) {
+                while (unPoked.Count != 0 && workingCoordinate.compare(legEnd) == false && currentBlocker == null) {
                         changeWorkingCoordinate(unPoked[0]);
                         pokeAdjacentsToUnexplored();
                         loopBreaker("search");
                 }
                 Debug.Log("Search ended.");
-                markPath(compileRoute(pathfinderGrid[workingCoordinate.x, workingCoordinate.y]));
+                return (compileRoute(pathfinderGrid[workingCoordinate.x, workingCoordinate.y]));
+        }
+
+        public void cornerA () {
+                while (workingCoordinate.compare(goalPoint) == false) {
+
+                }
         }
 
         void changeWorkingCoordinate (planeCoord newWork) {
                 if (workingCoordinate != null) {
-                        pathfinderGrid[workingCoordinate.x, workingCoordinate.y].GetComponent<Renderer>().material.SetColor("_Color", Color.yellow);
+                        pathfinderGrid[workingCoordinate.x, workingCoordinate.y].GetComponent<Renderer>().material.SetColor("_Color", Color.white);
                         excludedCells.Add(workingCoordinate);
                 }
                 workingCoordinate = newWork;
@@ -48,11 +57,14 @@ public class PathfinderScript : MonoBehaviour {
                         for (int j = -1; j <= 1; j++) {
                                 if (i != 0 || j != 0) {
                                         try {
-                                                if (isNewNavigable(pathfinderGrid[workingCoordinate.x + i, workingCoordinate.y + j]) == true) {
+                                                char squareInQuestion = isNewNavigable(pathfinderGrid[workingCoordinate.x + i, workingCoordinate.y + j]);
+                                                if (squareInQuestion == '1') {
                                                         planeCoord toInsert = new planeCoord(workingCoordinate.x + i, workingCoordinate.y + j);
                                                         insertUnpoked(toInsert);
                                                         pathfinderGrid[toInsert.x, toInsert.y].GetComponent<SquareProperties>().routeParent = pathfinderGrid[workingCoordinate.x, workingCoordinate.y];
-                                                        pathfinderGrid[toInsert.x, toInsert.y].GetComponent<SquareProperties>().pathLengthFromStart = compileRoute(pathfinderGrid[toInsert.x, toInsert.y]).Count;
+                                                }
+                                                else if (squareInQuestion != '0' && squareInQuestion != '1') {
+                                                        return;
                                                 }
                                         }
                                         catch (System.IndexOutOfRangeException) {
@@ -64,20 +76,24 @@ public class PathfinderScript : MonoBehaviour {
                 logLists();
         }
 
-        bool isNewNavigable (GameObject maybeWall) {
+        char isNewNavigable (GameObject maybeWall) {
                 if (searchListForPlaneCoord(excludedCells, maybeWall.GetComponent<SquareProperties>().nameInCoordinates)) {
-                        return false;
+                        return '0';
                 }
                 if (searchListForPlaneCoord(unPoked, maybeWall.GetComponent<SquareProperties>().nameInCoordinates)) {
-                        return false;
+                        return '0';
                 }
                 else if (maybeWall.GetComponent<SquareProperties>().getState() == "isWall"
-                        || maybeWall.GetComponent<SquareProperties>().getState() == "trainStart") {
+                || maybeWall.GetComponent<SquareProperties>().getState() == "trainStart") {
                         excludedCells.Add(maybeWall.GetComponent<SquareProperties>().nameInCoordinates);
                         maybeWall.GetComponent<Renderer>().material.SetColor("_Color", Color.black);
-                        return false;
+                        if (maybeWall.GetComponent<SquareProperties>().greatWall != null) {
+                                currentBlocker = maybeWall.GetComponent<SquareProperties>().greatWall.nameChar;
+                                return currentBlocker;
+                        }
+                        return '0';
                 }
-                return true;
+                return '1';
         }
 
         bool searchListForPlaneCoord (List<planeCoord> toSearch, planeCoord term) {
@@ -90,14 +106,14 @@ public class PathfinderScript : MonoBehaviour {
         }
 
         void insertUnpoked (planeCoord toInsert) {
-                float newAppeal = pathfinderGrid[workingCoordinate.x, workingCoordinate.y].GetComponent<SquareProperties>().pathLengthFromStart + workingCoordinate.distanceTo(toInsert) + toInsert.distanceTo(goalPoint);
+                float newAppeal = toInsert.distanceTo(goalPoint);
                 float midAppeal = 0.0f;
                 int min = 0;
                 int max = unPoked.Count - 1;
                 int mid = (min + max) / 2;
                 while (min <= max) {
                         mid = (min + max) / 2;
-                        midAppeal = pathfinderGrid[unPoked[mid].x, unPoked[mid].y].GetComponent<SquareProperties>().pathLengthFromStart + unPoked[mid].distanceTo(goalPoint);
+                        midAppeal = unPoked[mid].distanceTo(goalPoint);
                         if  (newAppeal == midAppeal) {  
                                 break;
                         }  
@@ -116,7 +132,7 @@ public class PathfinderScript : MonoBehaviour {
                         unPoked.Insert(mid++, toInsert);
                 }
                 Debug.Log("Added " + toInsert.x + "," + toInsert.y + " to unexplored locations.");
-                //pathfinderGrid[toInsert.x, toInsert.y].GetComponent<Renderer>().material.SetColor("_Color", Color.yellow);
+                pathfinderGrid[toInsert.x, toInsert.y].GetComponent<Renderer>().material.SetColor("_Color", Color.yellow);
         }
 
         List<planeCoord> compileRoute (GameObject square) {

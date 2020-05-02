@@ -22,35 +22,38 @@ public class Midcar : Traincar {
     }
 
     void checkForCorner() {
-        Debug.Log("Commencing scan from " + currentCoord.x + "," + currentCoord.y);
         if (relativePosition(nextCar.currentCoord) == relativePosition(nextCar.nextCar.currentCoord)
         && relativePosition(nextCar.currentCoord) == clockWise(clockWise(currentTravelDirection))
         && relativePosition(priorCar.currentCoord) == relativePosition(priorCar.priorCar.currentCoord)) {
             if (relativePosition(priorCar.currentCoord) == clockWise(currentTravelDirection)) {
                 Debug.Log("Clockwise turn identified.");
                 GameObject toTag = adjacentCell(counterClockWise(currentTravelDirection), true);
-                tagSquare(toTag, "C", "isNotWall");
-                parentTrain.currentTrack.associatedCorners.Add(toTag, "clockwise");
+                tagCornerSquare(toTag, "isNotWall", "clockwise");
             }
             else if (relativePosition(priorCar.currentCoord) == counterClockWise(currentTravelDirection)) {
                 Debug.Log("Counter-clockwise turn identified.");
                 GameObject toTag = adjacentCell(currentTravelDirection, true);
-                tagSquare(toTag, "C", "isNotWall");
-                parentTrain.currentTrack.associatedCorners.Add(toTag, "counter-clockwise");
+                tagCornerSquare(toTag, "isNotWall", "counter-clockwise");
             }
             else if (relativePosition(priorCar.currentCoord) == clockWise(clockWise(currentTravelDirection))) {
                 Debug.Log("About-face turn identified.");
                 GameObject toTag = adjacentCell(currentTravelDirection);
-                tagSquare(toTag, "C", "isNotWall");
-                parentTrain.currentTrack.associatedCorners.Add(toTag, null);
+                tagCornerSquare(toTag, "isNotWall");
             }
         }
     }
 
-    void tagSquare (GameObject toTag, string tagMessage, string requiredState) {
-        if (toTag.GetComponent<SquareProperties>().getState() == requiredState) {
-            Vector2 targetSquarePos = toTag.GetComponent<Transform>().position;
-            toTag.GetComponent<SquareProperties>().mark(targetSquarePos, tagMessage);
+    void tagCornerSquare (GameObject toTag, string requiredState, string newSquareState = null) {
+        try {
+            if (toTag.GetComponent<SquareProperties>().getState() == requiredState) {
+                Vector2 targetSquarePos = toTag.GetComponent<Transform>().position;
+                toTag.GetComponent<SquareProperties>().mark(targetSquarePos, "C");
+                if (parentTrain.currentTrack.associatedCorners.ContainsKey(toTag) == false) {
+                    parentTrain.currentTrack.associatedCorners.Add(toTag, newSquareState);
+                }
+            }
+        }
+        catch (System.NullReferenceException) {
         }
     }
 }
