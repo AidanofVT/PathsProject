@@ -48,8 +48,12 @@ public class Midcar : Traincar {
             if (toTag.GetComponent<SquareProperties>().getState() == requiredState) {
                 Vector2 targetSquarePos = toTag.GetComponent<Transform>().position;
                 toTag.GetComponent<SquareProperties>().mark(targetSquarePos, "C");
-                if (parentTrain.currentTrack.associatedCorners.ContainsKey(toTag) == false) {
-                    parentTrain.currentTrack.associatedCorners.Add(toTag, newSquareState);
+                planeCoord toTagCoord = toTag.GetComponent<SquareProperties>().nameInCoordinates;
+                // if (parentTrain.currentTrack.associatedCorners.ContainsKey(toTag) == false) {
+                //     parentTrain.currentTrack.associatedCorners.Add(toTag, newSquareState);
+                // }
+                if (parentTrain.currentTrack.associatedCorners.Contains(toTagCoord) == false) {
+                    parentTrain.currentTrack.associatedCorners.Add(toTagCoord);
                 }
             }
         }

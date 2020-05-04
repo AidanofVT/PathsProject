@@ -8,6 +8,7 @@ public class SquareProperties : MonoBehaviour
     enum tileType {isWall, isNotWall, trainStart, cornerAdjacent};
     tileType thisTile = tileType.isNotWall;
     public GameObject routeParent = null;
+    public List<GameObject> pathToParent = null;
     public int pathLengthFromStart;
     public bool clickedThisMouseDown = false;
     public planeCoord nameInCoordinates;

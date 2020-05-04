@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class Train : MonoBehaviour {
     List<Traincar> cars = new List<Traincar>(5);
-    List<Obstacle> obstacles = new List<Obstacle>();
+    public List<Obstacle> obstacles = new List<Obstacle>();
     public Obstacle currentTrack = null;
     public GameObject driver;
     List<GameObject> walls;
@@ -31,6 +31,11 @@ public class Train : MonoBehaviour {
         }
         endTrack();
         Debug.Log("Finished crawling.");
+        Hashtable namesToObstacles = new Hashtable();
+        foreach (Obstacle hunk in obstacles) {
+            namesToObstacles.Add(hunk.nameChar, hunk);
+        }
+        GameObject.Find("Driver").GetComponent<BeatingHeart>().identifiedObstacles = namesToObstacles;
     }
 
     public void chooChoo () {
@@ -94,7 +99,6 @@ public class Train : MonoBehaviour {
     }
 
     void endTrack () {
-        Debug.Log("End track called." + "Walls size  = " + walls.Count + ".");
         destroyTrain();
         if (currentTrack.size() >= 5) {
             Obstacle addCopy = currentTrack;

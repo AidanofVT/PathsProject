@@ -8,6 +8,7 @@ public class BeatingHeart : MonoBehaviour {
     public planeCoord heartFinish;
     public GameObject[,] grid;
     public List<GameObject> wallCells = new List<GameObject>();
+    public Hashtable identifiedObstacles = new Hashtable();
     ClickedCellContainer clickedCellContainer;
     GenerateGrid gridBuilder;
     public GameObject pathfinder;
@@ -18,8 +19,8 @@ public class BeatingHeart : MonoBehaviour {
         gridBuilder = gameObject.GetComponent<GenerateGrid>();
         grid = gridBuilder.generateGrid(sideLength);
         clickedCellContainer = gameObject.GetComponent<ClickedCellContainer>();
-        pathfinder.GetComponent<PathfinderScript>().pathfinderGrid = grid;
-        pathfinder.GetComponent<PathfinderScript>().startUp(heartStart, heartFinish);
+        pathfinder.GetComponent<CornerPathfinder>().pathfinderGrid = grid;
+        pathfinder.GetComponent<CornerPathfinder>().startUp(heartStart, heartFinish);
     }
 
     void Update() {
