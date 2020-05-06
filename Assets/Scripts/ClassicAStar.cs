@@ -8,6 +8,7 @@ public class ClassicAStar : MonoBehaviour {
         public GameObject[,] pathfinderGrid;
         List<planeCoord> unPoked = new List<planeCoord>();
         List<planeCoord> excludedCells = new List<planeCoord>();
+        List<GameObject> squaresWithParents = new List<GameObject>();
         public planeCoord startPoint;
         public planeCoord goalPoint;
         planeCoord workingCoordinate;
@@ -17,11 +18,13 @@ public class ClassicAStar : MonoBehaviour {
         public void startUp(planeCoord start, planeCoord finish) {
                 startPoint = start;
                 goalPoint = finish;
-                changeWorkingCoordinate (startPoint);
-                unPoked.Add(workingCoordinate);
         }
 
-        public List<planeCoord> search () {
+        public List<GameObject> search (planeCoord start, planeCoord finish) {
+                startPoint = start;
+                goalPoint = finish;
+                changeWorkingCoordinate (startPoint);
+                unPoked.Add(workingCoordinate);
                 pokeAdjacentsToUnexplored();
                 unPoked.Remove(startPoint);
                 while (unPoked.Count != 0 && workingCoordinate.compare(goalPoint) == false) {
@@ -30,8 +33,20 @@ public class ClassicAStar : MonoBehaviour {
                         loopBreaker("search");
                 }
                 Debug.Log("Search ended.");
-                return compileRoute(pathfinderGrid[workingCoordinate.x, workingCoordinate.y]);
-                markPath(compileRoute(pathfinderGrid[workingCoordinate.x, workingCoordinate.y]));
+                List<GameObject> toReturn = compileRoute(pathfinderGrid[workingCoordinate.x, workingCoordinate.y]);
+                zeroOut();
+                return toReturn;
+                //markPath(compileRoute(pathfinderGrid[workingCoordinate.x, workingCoordinate.y]));
+        }
+
+        void zeroOut () {
+                limiter = 0;
+                unPoked.Clear();
+                excludedCells.Clear();
+                workingCoordinate = null;
+                foreach (GameObject touched in squaresWithParents) {
+                        touched.GetComponent<SquareProperties>().routeParent = null;
+                }
         }
 
         void changeWorkingCoordinate (planeCoord newWork) {
@@ -51,13 +66,14 @@ public class ClassicAStar : MonoBehaviour {
                                         try {
                                                 if (isNewNavigable(pathfinderGrid[workingCoordinate.x + i, workingCoordinate.y + j]) == true) {
                                                         planeCoord toInsert = new planeCoord(workingCoordinate.x + i, workingCoordinate.y + j);
-                                                        insertUnpoked(toInsert);
                                                         pathfinderGrid[toInsert.x, toInsert.y].GetComponent<SquareProperties>().routeParent = pathfinderGrid[workingCoordinate.x, workingCoordinate.y];
+                                                        squaresWithParents.Add(pathfinderGrid[toInsert.x, toInsert.y]);
                                                         pathfinderGrid[toInsert.x, toInsert.y].GetComponent<SquareProperties>().pathLengthFromStart = compileRoute(pathfinderGrid[toInsert.x, toInsert.y]).Count;
+                                                        insertUnpoked(toInsert);
                                                 }
                                         }
                                         catch (System.IndexOutOfRangeException) {
-                                                Debug.Log("Skipping an nonexistant location " + (workingCoordinate.x + i) + "," + (workingCoordinate.y + j));
+                                                //Debug.Log("Skipping an nonexistant location " + (workingCoordinate.x + i) + "," + (workingCoordinate.y + j));
                                         }                                        
                                 }
                         }
@@ -72,8 +88,7 @@ public class ClassicAStar : MonoBehaviour {
                 if (searchListForPlaneCoord(unPoked, maybeWall.GetComponent<SquareProperties>().nameInCoordinates)) {
                         return false;
                 }
-                else if (maybeWall.GetComponent<SquareProperties>().getState() == "isWall"
-                        || maybeWall.GetComponent<SquareProperties>().getState() == "trainStart") {
+                else if (maybeWall.GetComponent<SquareProperties>().isA("wall")) {
                         excludedCells.Add(maybeWall.GetComponent<SquareProperties>().nameInCoordinates);
                         maybeWall.GetComponent<Renderer>().material.SetColor("_Color", Color.black);
                         return false;
@@ -91,14 +106,22 @@ public class ClassicAStar : MonoBehaviour {
         }
 
         void insertUnpoked (planeCoord toInsert) {
-                float newAppeal = pathfinderGrid[workingCoordinate.x, workingCoordinate.y].GetComponent<SquareProperties>().pathLengthFromStart + workingCoordinate.distanceTo(toInsert) + toInsert.distanceTo(goalPoint);
+                float testToStart = pathfinderGrid[toInsert.x, toInsert.y].GetComponent<SquareProperties>().pathLengthFromStart;
+                float testtoFinish = toInsert.distanceTo(goalPoint);
+                float testNext = workingCoordinate.distanceTo(toInsert);
+                float newAppeal = pathfinderGrid[toInsert.x, toInsert.y].GetComponent<SquareProperties>().pathLengthFromStart
+                                 + toInsert.distanceTo(goalPoint);
                 float midAppeal = 0.0f;
                 int min = 0;
                 int max = unPoked.Count - 1;
-                int mid = (min + max) / 2;
+                int mid = 0;
                 while (min <= max) {
                         mid = (min + max) / 2;
-                        midAppeal = pathfinderGrid[unPoked[mid].x, unPoked[mid].y].GetComponent<SquareProperties>().pathLengthFromStart + unPoked[mid].distanceTo(goalPoint);
+                        midAppeal = pathfinderGrid[unPoked[mid].x, unPoked[mid].y].GetComponent<SquareProperties>().pathLengthFromStart 
+                                + unPoked[mid].distanceTo(goalPoint);
+                        // if (Math.Abs(workingCoordinate.x - unPoked[mid].x) <= 1 && Math.Abs(workingCoordinate.y - unPoked[mid].y) <= 1) {
+                        //         midAppeal += workingCoordinate.distanceTo(unPoked[mid]);
+                        // }
                         if  (newAppeal == midAppeal) {  
                                 break;
                         }  
@@ -114,16 +137,20 @@ public class ClassicAStar : MonoBehaviour {
                         unPoked.Insert(mid, toInsert);
                 }
                 else {
-                        unPoked.Insert(mid++, toInsert);
+                        try {
+                                unPoked.Insert(mid + 1, toInsert);
+                        }
+                        catch (System.ArgumentOutOfRangeException) {
+                                unPoked.Add(toInsert);
+                        }
                 }
-                Debug.Log("Added " + toInsert.x + "," + toInsert.y + " to unexplored locations.");
-                //pathfinderGrid[toInsert.x, toInsert.y].GetComponent<Renderer>().material.SetColor("_Color", Color.yellow);
+                //Debug.Log("Added " + toInsert.x + "," + toInsert.y + " to unexplored locations.");
         }
 
-        List<planeCoord> compileRoute (GameObject square) {
-                List<planeCoord> backwardsRoute = new List<planeCoord>();
+        List<GameObject> compileRoute (GameObject square) {
+                List<GameObject> backwardsRoute = new List<GameObject>();
                 while (square.GetComponent<SquareProperties>().routeParent != null) {
-                        backwardsRoute.Add(square.GetComponent<SquareProperties>().nameInCoordinates);
+                        backwardsRoute.Add(square);
                         square = square.GetComponent<SquareProperties>().routeParent;
                         loopBreaker("compileRoute");
                 }
@@ -145,7 +172,7 @@ public class ClassicAStar : MonoBehaviour {
                                 foreach (planeCoord entry in excludedCells) {
                                         excludedStatus = excludedStatus + entry.x + "," + entry.y + " -- ";
                                 }
-                        Debug.Log("Finished poking around " + workingCoordinate.toInts() + " , the unexplored list is: " + unexploredStatus 
+                        Debug.Log("(Vanilla A*) Finished poking around " + workingCoordinate.toInts() + " , the unexplored list is: " + unexploredStatus 
                         + ". The excludedCells list is: " + excludedStatus);
         }
 

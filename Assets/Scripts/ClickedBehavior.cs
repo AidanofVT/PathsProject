@@ -6,7 +6,7 @@ public class ClickedBehavior : MonoBehaviour {
 
     void OnMouseOver () {
         if (Input.GetKey(KeyCode.Mouse0)) {
-            this.GetComponent<SquareProperties>().changeState();
+            this.GetComponent<SquareProperties>().addState("wall");
         }        
     }
 

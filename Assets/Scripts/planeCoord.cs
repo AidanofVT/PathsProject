@@ -20,8 +20,8 @@ public class planeCoord
         return Mathf.Abs((Mathf.Sqrt(Mathf.Pow(from.x - x, 2) + Mathf.Pow(from.y -y, 2))));
     }
 
-    public int course (planeCoord from) {
-        return (y - from.y) / (x - from.x);
+    public float course (planeCoord from) {
+        return Mathf.Atan2(y - from.y, x - from.x);
     }
 
     public bool compare(planeCoord p) {
@@ -34,11 +34,3 @@ public class planeCoord
         return false;
     }
 }
-
-    // public int x () {
-    //     return xCoordinate;
-    // }
-
-    // public int y () {
-    //     return yCoordinate;
-    // }

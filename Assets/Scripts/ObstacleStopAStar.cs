@@ -84,12 +84,13 @@ public class ObstacleStopAStar : MonoBehaviour {
                                                         squaresWithParents.Add(pathfinderGrid[toInsert.x, toInsert.y]);
                                                         pathfinderGrid[toInsert.x, toInsert.y].GetComponent<SquareProperties>().pathLengthFromStart = compileRoute(pathfinderGrid[toInsert.x, toInsert.y]).Count;
                                                 }
-                                                else if (navTypChar != ignoredObstacle && navTypChar != '0') {                                                        
+                                                else if (navTypChar != ignoredObstacle && navTypChar != '0') {  
+                                                        //add: don't abort if the cost of calculating the corners is greater than the best-case savings                                                      
                                                         return navTypChar;
                                                 } 
                                         }
                                         catch (System.IndexOutOfRangeException) {
-                                                Debug.Log("Skipping an nonexistant location " + (workingCoordinate.x + i) + "," + (workingCoordinate.y + j));
+                                                //Debug.Log("Skipping an nonexistant location " + (workingCoordinate.x + i) + "," + (workingCoordinate.y + j));
                                         }                                        
                                 }
                         }
@@ -99,14 +100,14 @@ public class ObstacleStopAStar : MonoBehaviour {
         }
 
         char isNewNavigable (GameObject maybeWall) {
+                planeCoord breakerCoord = maybeWall.GetComponent<SquareProperties>().nameInCoordinates;
                 if (searchListForPlaneCoord(excludedCells, maybeWall.GetComponent<SquareProperties>().nameInCoordinates)) {
                         return '0';
                 }
                 if (searchListForPlaneCoord(unPoked, maybeWall.GetComponent<SquareProperties>().nameInCoordinates)) {
                         return '0';
                 }
-                else if (maybeWall.GetComponent<SquareProperties>().getState() == "isWall"
-                        || maybeWall.GetComponent<SquareProperties>().getState() == "trainStart") {
+                else if (maybeWall.GetComponent<SquareProperties>().isA("wall")) {
                         if (maybeWall.GetComponent<SquareProperties>().greatWall != null) {
                                 return maybeWall.GetComponent<SquareProperties>().greatWall.nameChar;
                         }
@@ -129,17 +130,17 @@ public class ObstacleStopAStar : MonoBehaviour {
         void insertUnpoked (planeCoord toInsert) {
                 float testToStart = pathfinderGrid[workingCoordinate.x, workingCoordinate.y].GetComponent<SquareProperties>().pathLengthFromStart;
                 float testtoFinish = toInsert.distanceTo(goalPoint);
-                float testTeNext = workingCoordinate.distanceTo(toInsert);
+                float testNext = workingCoordinate.distanceTo(toInsert);
                 float newAppeal = pathfinderGrid[toInsert.x, toInsert.y].GetComponent<SquareProperties>().pathLengthFromStart
-                                         + workingCoordinate.distanceTo(toInsert) + toInsert.distanceTo(goalPoint);
+                                  + toInsert.distanceTo(goalPoint);
                 float midAppeal = 0.0f;
                 int min = 0;
                 int max = unPoked.Count - 1;
-                int mid = (min + max) / 2;
+                int mid = 0;
                 while (min <= max) {
                         mid = (min + max) / 2;
                         midAppeal = pathfinderGrid[unPoked[mid].x, unPoked[mid].y].GetComponent<SquareProperties>().pathLengthFromStart
-                                         + unPoked[mid].distanceTo(goalPoint);
+                                    + unPoked[mid].distanceTo(goalPoint);
                         if  (newAppeal == midAppeal) {  
                                 break;
                         }  
@@ -155,10 +156,14 @@ public class ObstacleStopAStar : MonoBehaviour {
                         unPoked.Insert(mid, toInsert);
                 }
                 else {
-                        unPoked.Insert(mid++, toInsert);
+                        try {
+                                unPoked.Insert(mid + 1, toInsert);
+                        }
+                        catch (System.ArgumentOutOfRangeException) {
+                                unPoked.Add(toInsert);
+                        }
                 }
-                Debug.Log("Added " + toInsert.x + "," + toInsert.y + " to unexplored locations.");
-                //pathfinderGrid[toInsert.x, toInsert.y].GetComponent<Renderer>().material.SetColor("_Color", Color.yellow);
+                //Debug.Log("Added " + toInsert.x + "," + toInsert.y + " to unexplored locations.");
         }
 
         List<GameObject> compileRoute (GameObject square) {
@@ -190,7 +195,7 @@ public class ObstacleStopAStar : MonoBehaviour {
                                 foreach (planeCoord entry in excludedCells) {
                                         excludedStatus = excludedStatus + entry.x + "," + entry.y + " -- ";
                                 }
-                        Debug.Log("Finished poking around " + workingCoordinate.toInts() + " , the unexplored list is: " + unexploredStatus 
+                        Debug.Log("(Obstacle-stop A*) Finished poking around " + workingCoordinate.toInts() + " , the unexplored list is: " + unexploredStatus 
                         + ". The excludedCells list is: " + excludedStatus);
         }
 

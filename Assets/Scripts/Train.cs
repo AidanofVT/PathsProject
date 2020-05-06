@@ -12,15 +12,15 @@ public class Train : MonoBehaviour {
     List<GameObject> walls;
     public Canvas canvas;
     public GameObject Textie;
-    string[] obsticalNamesArray = {"Z","Y","X","W","V","U"};
-    List<string> obsticalNames;
-    int limit = 500;
+    char[] obsticalNamesArray = {'Z','Y','X','W','V','U','T','S'};
+    List<char> obsticalNames;
+    int limit = 5000;
     int limiter = 0;
     bool go = false;
 
     private void Awake() {
         walls = driver.GetComponent<BeatingHeart>().wallCells;
-        obsticalNames = new List<string>(obsticalNamesArray);
+        obsticalNames = new List<char>(obsticalNamesArray);
     }
 
     public void conduct () {
@@ -67,7 +67,7 @@ public class Train : MonoBehaviour {
             catch (System.ArgumentOutOfRangeException) {
             }
         }
-        cars[2].getSquare().GetComponent<SquareProperties>().changeState("trainStart");
+        cars[2].getSquare().GetComponent<SquareProperties>().addState("trainStart");
         go = true;
     }
 
@@ -81,9 +81,11 @@ public class Train : MonoBehaviour {
                 currentTrack = new Obstacle();
             }
             ((Midcar)cars[2]).scan();
-            currentTrack.constituentWalls.Add(cars[2].getSquare());
+            if (currentTrack.constituentWalls.Contains(cars[2].getSquare()) == false) {
+                currentTrack.constituentWalls.Add(cars[2].getSquare());
+            }
             walls.Remove(cars[2].getSquare());          
-            if (cars[2].getSquare().GetComponent<SquareProperties>().getState() == "trainStart"
+            if (cars[2].getSquare().GetComponent<SquareProperties>().isA("trainStart")
             && walls.Contains(cars[1].getSquare()) == false) {
                 endTrack();
                 return;
@@ -100,18 +102,19 @@ public class Train : MonoBehaviour {
 
     void endTrack () {
         destroyTrain();
-        if (currentTrack.size() >= 5) {
+        if (currentTrack.constituentWalls.Count >= 5) {
             Obstacle addCopy = currentTrack;
-            foreach (GameObject memberSquare in currentTrack.constituentWalls) {
-                mark(memberSquare.GetComponent<Transform>().position, obsticalNames[0]);
+            foreach (GameObject memberSquare in addCopy.constituentWalls) {
+                mark(memberSquare.GetComponent<Transform>().position, obsticalNames[0].ToString());
                 memberSquare.GetComponent<SquareProperties>().greatWall = addCopy;
             }
+            addCopy.nameChar = obsticalNames[0];
             obstacles.Add(addCopy);
             obsticalNames.RemoveAt(0);
         }
-        currentTrack = null;
         go = false;
         if (walls.Count > 0) {
+            currentTrack = null;
             chooChoo();
         }
     }

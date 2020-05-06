@@ -74,8 +74,7 @@ public class Traincar : MonoBehaviour {
 
     bool isNavigableWall (GameObject maybeNavigable) {
         try {
-            if (maybeNavigable.GetComponent<SquareProperties>().getState() == "isWall"
-            || maybeNavigable.GetComponent<SquareProperties>().getState() == "trainStart") {
+            if (maybeNavigable.GetComponent<SquareProperties>().isA("wall")) {
                 return true;
             }
         }

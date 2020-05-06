@@ -5,8 +5,9 @@ using UnityEngine.UI;
 
 public class SquareProperties : MonoBehaviour
 {
-    enum tileType {isWall, isNotWall, trainStart, cornerAdjacent};
-    tileType thisTile = tileType.isNotWall;
+    List<string> thisTile = new List<string>();
+    //enum tileType {isWall, isNotWall, trainStart, cornerAdjacent, terminus};
+    //tileType thisTile = tileType.isNotWall;
     public GameObject routeParent = null;
     public List<GameObject> pathToParent = null;
     public int pathLengthFromStart;
@@ -19,54 +20,78 @@ public class SquareProperties : MonoBehaviour
 
     private void Start() {
         canvas = GameObject.FindGameObjectWithTag("MainCanvas").GetComponent<Canvas>();
+        thisTile.Add("notWall");
     }
 
     public void nameCell (int x, int y) {
         this.nameInCoordinates = new planeCoord(x,y);
     }
 
-    public void changeState(string newState = "toggleWall") {
-        switch (newState) {
-            case "toggleWall":
-                if (clickedThisMouseDown == false) {
-                    if (thisTile == tileType.isNotWall) {
-                        setAsWall();
-                    }
-                    else if (thisTile == tileType.isWall) {
-                        setAsNotWall();
-                    }
-                    driver.GetComponent<ClickedCellContainer>().add(nameInCoordinates);
-                    clickedThisMouseDown = true;
+    public void addState (string newState) {
+        if (newState == "wall" || newState == "notWall") {
+            if (clickedThisMouseDown == false) {
+                if (thisTile.Contains("notWall")) {
+                    setAsWall();
                 }
-            break;
-            case "cornerAdjacent":
-                thisTile = tileType.cornerAdjacent;
-            break;
-            case "trainStart":
-                thisTile = tileType.trainStart;
-            break;
+                else if (thisTile.Contains("wall")) {
+                    setAsNotWall();
+                }
+                driver.GetComponent<ClickedCellContainer>().add(nameInCoordinates);
+                clickedThisMouseDown = true;
+            }
+        }
+        else {
+            thisTile.Add(newState);
         }
     }
 
+    // public void changeState(string newState = "toggleWall") {
+    //     switch (newState) {
+    //         case "toggleWall":
+    //             if (clickedThisMouseDown == false) {
+    //                 if (thisTile == tileType.isNotWall) {
+    //                     setAsWall();
+    //                 }
+    //                 else if (thisTile == tileType.isWall) {
+    //                     setAsNotWall();
+    //                 }
+    //                 driver.GetComponent<ClickedCellContainer>().add(nameInCoordinates);
+    //                 clickedThisMouseDown = true;
+    //             }
+    //         break;
+    //         case "cornerAdjacent":
+    //             thisTile = tileType.cornerAdjacent;
+    //         break;
+    //         case "trainStart":
+    //             thisTile = tileType.trainStart;
+    //         break;
+    //         case "terminus":
+    //             thisTile = tileType.terminus;
+    //         break;
+    //     }
+    // }
+
     void setAsWall (){
-        thisTile = tileType.isWall;
+        thisTile.Add("wall");
+        thisTile.Remove("notWall");
         this.GetComponent<Renderer>().material.SetColor("_Color", Color.grey);
     }
 
     void setAsNotWall () {
-        thisTile = tileType.isNotWall;
+        thisTile.Add("notWall");
+        thisTile.Remove("wall");
         this.GetComponent<Renderer>().material.SetColor("_Color", Color.white);
     }
 
-    public bool isWall () {
-        if (thisTile.Equals(tileType.isWall)) {
+    public bool isA (string query) {
+        if (thisTile.Contains(query)) {
             return true;
         }
         return false;
     }
 
-    public string getState () {
-        return thisTile.ToString();
+    public List<string> getState () {
+        return thisTile;
     }
 
     public void mark (Vector2 wherePut, string toDisplay) {

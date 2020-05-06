@@ -28,36 +28,41 @@ public class Midcar : Traincar {
             if (relativePosition(priorCar.currentCoord) == clockWise(currentTravelDirection)) {
                 Debug.Log("Clockwise turn identified.");
                 GameObject toTag = adjacentCell(counterClockWise(currentTravelDirection), true);
-                tagCornerSquare(toTag, "isNotWall", "clockwise");
+                tagCornerSquare(toTag, "clockwise");
             }
             else if (relativePosition(priorCar.currentCoord) == counterClockWise(currentTravelDirection)) {
                 Debug.Log("Counter-clockwise turn identified.");
                 GameObject toTag = adjacentCell(currentTravelDirection, true);
-                tagCornerSquare(toTag, "isNotWall", "counter-clockwise");
+                tagCornerSquare(toTag, "counter-clockwise");
             }
             else if (relativePosition(priorCar.currentCoord) == clockWise(clockWise(currentTravelDirection))) {
                 Debug.Log("About-face turn identified.");
                 GameObject toTag = adjacentCell(currentTravelDirection);
-                tagCornerSquare(toTag, "isNotWall");
+                tagCornerSquare(toTag);
             }
         }
     }
 
-    void tagCornerSquare (GameObject toTag, string requiredState, string newSquareState = null) {
+    void tagCornerSquare (GameObject toTag, string newSquareState = null) {
         try {
-            if (toTag.GetComponent<SquareProperties>().getState() == requiredState) {
+            if (toTag.GetComponent<SquareProperties>().isA("wall") == false) {
                 Vector2 targetSquarePos = toTag.GetComponent<Transform>().position;
                 toTag.GetComponent<SquareProperties>().mark(targetSquarePos, "C");
+                toTag.GetComponent<SquareProperties>().addState("corner");
                 planeCoord toTagCoord = toTag.GetComponent<SquareProperties>().nameInCoordinates;
-                // if (parentTrain.currentTrack.associatedCorners.ContainsKey(toTag) == false) {
-                //     parentTrain.currentTrack.associatedCorners.Add(toTag, newSquareState);
-                // }
                 if (parentTrain.currentTrack.associatedCorners.Contains(toTagCoord) == false) {
                     parentTrain.currentTrack.associatedCorners.Add(toTagCoord);
                 }
             }
         }
         catch (System.NullReferenceException) {
+            Vector2 midCarPos = map[currentCoord.x, currentCoord.y].GetComponent<Transform>().position;
+            map[currentCoord.x, currentCoord.y].GetComponent<SquareProperties>().mark(midCarPos, "R");
+            map[currentCoord.x, currentCoord.y].GetComponent<SquareProperties>().addState("terminus");
+            planeCoord taggedCoord = map[currentCoord.x, currentCoord.y].GetComponent<SquareProperties>().nameInCoordinates;
+            if (parentTrain.currentTrack.associatedCorners.Contains(taggedCoord) == false) {
+                    parentTrain.currentTrack.associatedCorners.Add(taggedCoord);
+            }
         }
     }
 }
